@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Routes from "./Routes";
 import { Navbar, Nav, NavItem } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";    
+import { Link, useHistory } from "react-router-dom";
 import { LinkContainer } from "react-router-bootstrap";
 import { AppContext } from "./libs/contextLib";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { Auth } from "aws-amplify";
-
 
 import "./App.css";
 
@@ -13,28 +13,27 @@ function App() {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
   const [isAuthenticated, userHasAuthenticated] = useState(false);
   const history = useHistory();
-  
+
   useEffect(() => {
     onLoad();
   }, []);
-  
+
   async function onLoad() {
     try {
       await Auth.currentSession();
       userHasAuthenticated(true);
-    }
-    catch(e) {
-      if (e !== 'No current user') {
+    } catch (e) {
+      if (e !== "No current user") {
         alert(e);
       }
     }
-  
+
     setIsAuthenticating(false);
   }
 
   async function handleLogout() {
     await Auth.signOut();
-  
+
     userHasAuthenticated(false);
     history.push("/login");
   }
@@ -71,11 +70,13 @@ function App() {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-        <AppContext.Provider
-          value={{ isAuthenticated, userHasAuthenticated }}
-        >
-          <Routes />
-        </AppContext.Provider>
+        <ErrorBoundary>
+          <AppContext.Provider
+            value={{ isAuthenticated, userHasAuthenticated }}
+          >
+            <Routes />
+          </AppContext.Provider>
+        </ErrorBoundary>
       </div>
     )
   );
